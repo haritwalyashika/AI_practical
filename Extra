@@ -1,0 +1,96 @@
+from queue import PriorityQueue
+
+#goal
+def is_goal(state):
+    # All missionaries and cannibals placed on right bank safely with boat at right bank at end
+    if state==(0,0,'right',3,3):
+        return True
+
+#valid
+def is_valid(left_m,left_c,side,right_m,right_c):
+    #if number of missionaries or cannibals negative at any point of time
+    if(left_m<0 or left_c<0 or right_m <0 or right_c<0):
+        return False
+    #if number of cannibals exceeds missionaries at any point of time
+    elif((left_m>0 and left_c>left_m) or (right_m >0 and right_c>right_m )):
+        return False
+    else:
+        return True    
+#NS
+def nextstate(CS):
+    nextstates=[]
+    
+    left_m,left_c,side,right_m,right_c = CS
+
+    if side=='left':
+        for m in range(3):
+             for c in range(3):
+                #atmost 2 people on boat
+                if 1<=   m+c <= 2:
+                    nextstate=(left_m-m,left_c-c,'right',right_m+m,right_c+c)
+                    if is_valid(*nextstate):
+                        nextstates.append(nextstate)
+    else:
+          for m in range(3):
+             for c in range(3):
+                #atmost 2 people on boat
+                if 1<=m+c <=2:
+                    nextstate=(left_m+m,left_c+c,'left',right_m-m,right_c-c)
+                    if is_valid(*nextstate):
+                        nextstates.append(nextstate)
+    return nextstates                    
+
+#ucs
+def UCS(CS):
+    visited=set()
+    frontier=PriorityQueue() #cost as priority
+    frontier.put((0,CS,[CS]))
+
+    while not frontier.empty():
+        cost,state ,path =frontier.get()
+       
+        if is_goal(state):
+            return path
+
+        if state not in visited:
+            visited.add(state)
+
+            for next in nextstate(state):
+                if next not in visited:
+                    g=cost+1     #cost to reach goal state from initial state
+                    frontier.put((g,next,path+[next]))
+    return False
+
+#print
+def print_sol(solution):
+    if solution:
+        print("LEFT\tBOAT\tRIGHT")
+        print("M  C\t\tM  C")
+        for s in solution:
+            print(s)
+    else:
+        print("sol not found ")       
+#int
+
+if __name__=="__main__":
+    IS=(3,3,'left',0,0)
+    solution=UCS(IS)
+    print_sol(solution)
+
+
+
+#OUPUT:
+LEFT	BOAT	RIGHT
+M  C		M  C
+(3, 3, 'left', 0, 0)
+(2, 2, 'right', 1, 1)
+(3, 2, 'left', 0, 1)
+(3, 0, 'right', 0, 3)
+(3, 1, 'left', 0, 2)
+(1, 1, 'right', 2, 2)
+(2, 2, 'left', 1, 1)
+(0, 2, 'right', 3, 1)
+(0, 3, 'left', 3, 0)
+(0, 1, 'right', 3, 2)
+(0, 2, 'left', 3, 1)
+(0, 0, 'right', 3, 3)
